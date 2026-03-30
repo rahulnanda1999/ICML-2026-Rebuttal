@@ -157,7 +157,7 @@ We make two observations.
 
 ### Missing Related Work
 
-**Chen et al. (2021).** The white-box schemes (V1/V2) are not applicable in our setting because a surrogate GNN trained via model extraction is a separately trained model with different weights, architecture, and sparsity patterns; there is no shared mask from which to extract a signature. The black-box scheme (V3) is a trigger-based watermark / backdoor method. Prior works shows that surrogates trained by model extraction need not inherit the trigger behavior (Section 2). We also compare against the latest GNN watermarking methods (PreGIP) and show that CopyCop outperforms it (Table 1).
+**Chen et al. (2021).** The white-box schemes (V1/V2) are not applicable in our setting because a surrogate GNN trained via model extraction is a separately trained model with different weights, architecture, and sparsity patterns; there is no shared mask from which to extract a signature. The black-box scheme (V3) is a trigger-based watermark / backdoor method. Prior works shows that such triggers often do not survive model extraction (Section 2). We also compare against the latest GNN watermarking methods (PreGIP) and show that CopyCop outperforms it (Table 1).
 
 **Wu et al. (2024).** This work addresses *integrity verification*, i.e., whether a deployed model has been tampered with, whereas CopyCop addresses *ownership verification*, i.e., whether a separately trained suspect model is a surrogate of the victim. Their method assumes the attacker modifies the same deployed model and checks whether predictions on fingerprint nodes still match pre-recorded labels. That threat model is fundamentally different from ours, where the suspect is a new model trained to mimic the victim.
 
@@ -180,7 +180,7 @@ We make two observations.
 
 - The intended statement is a closure property and we agree that it should indeed be stated as a lemma.
 - **Lemma:** If $f(\cdot)$ and $g(\cdot)$ each satisfy Assumption 3.4, then $(f \circ g)(\cdot)$ also satisfies it.
-    - **Proof:** $\nabla_w f = J_f w$ for any $w$, where $J_f$ is the Jacobian of $f(\cdot)$. By assumption, $J_f w\neq 0$ and $J_g v\neq 0$ for any vector $w$ and $v$. Then, by the chain rule of Jacobians, $\nabla_w f\circ g = J_{f\circ g} w = J_f J_g w\neq 0$. Hence, the composition $f\circ g$ also satisfies Assumption 3.4.
+    - **Proof:** $\nabla_w f = J_f w$ for any $w$, where $J_f$ is the Jacobian of $f(\cdot)$. By assumption, $J_f w\neq 0$ and $J_g v\neq 0$ for any vector $w$ and $v$. Then, by the chain rule of Jacobians, $\nabla_w f\circ g = J_{f\circ g} w = J_f J_g w\neq 0$. Hence, $f\circ g$ also satisfies Assumption 3.4.
 
 ### Meaning of $P(S(M) \setminus S(I)) \ge \gamma_M$
 
@@ -190,21 +190,21 @@ We make two observations.
 
 ### Hyperparameters and Reproducibility
 
-- We used standard GNN configurations from the literature / PyTorch Geometric defaults (2–3 convolution layers with ReLU and dropout, followed by linear layers where needed). We will update the appendix with this information.
-- Our goal was to evaluate whether CopyCop works across a diverse range of trained models, and not tuning hyperparameters for the highest accuracy. The results span 5 architectures and 14 datasets, which provides evidence that CopyCop is reasonably robust to variation in architecture and training configuration. We will release the code after incorporating comments from reviews.
+- We used standard GNN configurations from the literature (2–3 convolution layers with ReLU, dropout, and linear layers where needed). We will update the appendix with this information.
+- Our goal was to evaluate whether CopyCop works across a diverse range of trained models, and not tuning hyperparameters for the highest accuracy. The results span 5 architectures and 14 datasets, which shows that CopyCop is reasonably robust to such variations. We will release the code after incorporating comments from reviews.
 
 ### Explanation of Table 1 and 2
 
-- Each AUC in Table 1 is computed by classifying all surrogates (across all random seeds and all 5 GNN architectures) against all independent models (again across seeds and architectures). The tables are not from single runs.
+- Each AUC in the tables is computed by classifying all surrogates (across all random seeds and all 5 GNN architectures) against all independent models (again across seeds and architectures). The tables are not from single runs.
 
 ### Feasible Inputs, Shorthand, and Notation
 
-- By "feasible" we mean inputs $(G, X)$ in the support of the data distribution $\mathcal{D}$. For instance, if the node features are integers, then feasible graphs cannot have floating-point features.
+- By "feasible" we mean inputs $(G, X)$ in the support of the data distribution $\mathcal{D}$. 
 - We will also reduce notation overload: add a clearer reminder after Eq. 3 that $t = (G, X, i, w)$, avoid reusing $t$ with different meanings, and fix typographical issues such as writing $\mu_M$ consistently instead of $\mu(M)$.
 
 ### Algorithm 1 and Sample Complexity
 
-- Theorem 3.9 shows that the error probability is at most $\exp(-2|T|\gamma_M^2)$, so detection confidence improves exponentially with the number of sampled stationary points. This matches Figure 3 in the Appendix, where roughly 20–40 points suffice empirically to reach near-maximal AUC.
+- Detection confidence improves exponentially with the number of sampled stationary points (Theorem 3.9). Figure 3 in the Appendix shows that 20–40 points suffice empirically to reach near-maximal AUC.
 - **Does $S(I)$ need to be countable?** No. What matters is only the $\mu_M$-measure of the subset $S(M) \setminus S(I)$; the algorithm never samples from $S(I)$.
 - **What is Haar?** Here, Haar measure refers to the uniform probability measure on the unit sphere.
 
@@ -216,3 +216,5 @@ We make two observations.
 
 - The intended meaning is the $\mu_M$-measure of the subset $S(M) \setminus S(I)$, where $\mu_M$ is the probability measure over stationary points of $M$ induced by our sampling procedure. Equivalently, $P_{t \sim \mu_M}(t \notin S(I)) \ge \gamma_M$.
 - That is, if we sample a stationary point of the victim according to $\mu_M$, then with probability at least $\gamma_M$ it is not also stationary for an independent model. We will rewrite Assumption 3.8 in this explicit form.
+
+- For instance, if the node features are integers, then feasible graphs cannot have floating-point features.
