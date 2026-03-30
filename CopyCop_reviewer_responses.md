@@ -117,7 +117,7 @@
 - We will move Figure 3 from the Appendix to the main paper given its importance.
 
 
-## EXTRA
+### === EXTRA for Reviewer iNur ===
 We make two observations.
 
 1. Lemma 3.14 shows that CopyCop's detection metric $\beta_{M'}$ scales as $O(\max(\epsilon/\delta, \delta))$, so detection degrades with $\epsilon$. The method does not require $\epsilon = 0$; it requires $\epsilon = o(\delta)$.
@@ -129,26 +129,28 @@ We make two observations.
 
 ## Reviewer 3yYA
 
-### W1 - Testing Against Other Published Model Extraction Attacks
+### Testing Against Other Published Model Extraction Attacks
 
 - The attack of Shen et al. (2022) consists of two stages: first, training a surrogate to mimic the victim's embeddings, and second, fine-tuning on downstream labels. This closely matches the pipeline we already evaluate. Table 1 reports CopyCop's AUC under model extraction, and Figure 1b shows robustness under subsequent fine-tuning. We will make this connection explicit in the revision.
 
-### W2 - Do Published Attacks Satisfy the Assumptions?
+### Do Published Attacks Satisfy the Assumptions?
 
-- In the embedding-response extraction setting we study, the surrogate is trained to minimize embedding discrepancy directly, so the effective transformation $\phi$ is the identity. Thus, Assumptions 3.4 and 3.13 are trivially satisfied in that setting.
-- The transformations in Table 2 (rotations, scaling, projections, and non-linear maps) are not taken from those attacks directly; rather, they are adversarial countermeasures that we introduce as stress tests to evaluate whether a copied model could evade detection after extraction.
+- The transformations in Table 2 (rotations, scaling, projections, and non-linear maps) are not taken from the published attacks. Rather, they are adversarial countermeasures that we introduce as stress tests to evaluate whether a copied model could evade detection after extraction.
 - Assumptions 3.4 and 3.13 describe properties such countermeasures should satisfy if the transformed surrogate is to remain useful. Our experiments also include transformations that violate these assumptions (e.g., translation violates $\phi(0) = 0$ in Assumption 3.13), yet CopyCop still performs well, suggesting that the method may remain effective beyond the exact scope of the formal guarantees.
 
-### W3 - No Standard Deviations in Results
+### No Standard Deviations in Results
 
-- Each AUC in Table 1 is computed by aggregating over all surrogates (across random seeds and all 5 GNN architectures) against all independent models (again across seeds and architectures).
+- Each AUC in Table 1 is computed by classifying all surrogates (across all random seeds and all 5 GNN architectures) against all independent models (again across seeds and architectures).
 
-### W4 - Does Training on a Subgraph Affect Definition 3.2?
+### Does Training on a Subgraph Affect Definition 3.2?
 
-- Practical extraction attacks are trained only on a subset of queried graphs, so the reconstruction error $\epsilon$ may be smaller on queried graphs than on unseen ones. This does not invalidate our setup for two reasons.
-  1. As noted in Remark 3.3, the uniform condition in Definition 3.2 can be relaxed to hold with high probability under the data distribution $\mathcal{D}$, rather than uniformly over all inputs. CopyCop queries the suspect model using graphs sampled from $\mathcal{D}$ (through $\mathcal{D}_{\text{exp}}$) and nearby perturbed graphs induced by the optimization in Eq. 5. As long as $\epsilon$ remains small in this region - which is expected when the adversary's queried subgraphs are sampled from the same distribution - detection signal remains strong.
-  2. Practical extraction attacks are designed to generalize beyond the queried subset; indeed, Shen et al. (2022) and Podhajski et al. (2024) both report strong fidelity on held-out data. Empirically, in our experiments the victim–surrogate embedding distance over the full dataset is far smaller than the victim–independent distance, confirming that $\epsilon$ remains small where it matters for detection.
+- The reconstruction error may be smaller on the training graphs/subgraphs than on unseen ones. Still, our approach remains valid, for several reasons:
+  1. Practical extraction attacks are designed to generalize beyond the queried subset; indeed, Shen et al. (2022) and Podhajski et al. (2024) both report strong fidelity on held-out data.
+  2. We observe the same: the relative error between the victim and surrogate embeddings (without any transformation) **over unseen graphs** is typically less than 2% on average.
+  3. As noted in Remark 3.3, we only need the reconstruction error to be small with high probability, rather than uniformly over all graphs. CopyCop queries the suspect model using graphs sampled from the data distribution and then perturbed slightly by the optimization of Eq. 5. We expect the reconstruction error to be small sice the adversary also samples graphs from the same data distribution during model extraction.
 
+### === EXTRA for Reviewer 3yYA ===
+- In the embedding-response extraction setting we study, the surrogate is trained to minimize embedding discrepancy directly, so the effective transformation $\phi$ is the identity. Thus, Assumptions 3.4 and 3.13 are trivially satisfied in that setting.
 
 
 ## Reviewer b7h2
