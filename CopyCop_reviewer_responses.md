@@ -155,44 +155,64 @@ We make two observations.
 
 ## Reviewer b7h2
 
-### W1 - Missing Related Work [1, 2]
+### Missing Related Work
 
-**Chen et al. (2021).** The white-box schemes (V1/V2) are not applicable in our setting because a surrogate GNN trained via model extraction is a separately trained model with different weights, architecture, and sparsity patterns; there is no shared mask from which to extract a signature. The black-box scheme (V3) is a trigger-based watermark / backdoor method. As discussed in Section 2 and shown by prior work on model extraction, such watermarking is vulnerable because the surrogate is trained on ordinary victim outputs and need not inherit the trigger behavior. CopyCop, by contrast, is a fingerprinting method rather than a watermarking method, and Table 1 shows robustness under model extraction.
+**Chen et al. (2021).** The white-box schemes (V1/V2) are not applicable in our setting because a surrogate GNN trained via model extraction is a separately trained model with different weights, architecture, and sparsity patterns; there is no shared mask from which to extract a signature. The black-box scheme (V3) is a trigger-based watermark / backdoor method. Prior works shows that surrogates trained by model extraction need not inherit the trigger behavior (Section 2). We also compare against the latest GNN watermarking methods (PreGIP) and show that CopyCop outperforms it (Table 1).
 
 **Wu et al. (2024).** This work addresses *integrity verification*, i.e., whether a deployed model has been tampered with, whereas CopyCop addresses *ownership verification*, i.e., whether a separately trained suspect model is a surrogate of the victim. Their method assumes the attacker modifies the same deployed model and checks whether predictions on fingerprint nodes still match pre-recorded labels. That threat model is fundamentally different from ours, where the suspect is a new model trained to mimic the victim.
 
-### W2 - Definition 3.2 Is Too Loose / No Upper Bound on $\epsilon$
+### How can $h'_i$ and $\hat{h}_i$ differ, and how is $\hat{h}_i - h_i$ well-defined?
 
-- Definition 3.2 is not intended as a binary classifier of whether $M'$ is or is not a surrogate. Rather, it parameterizes the closeness of $M'$ to $M$ through the reconstruction error $\epsilon$. Our theory makes this dependence explicit: Lemma 3.14 shows $\beta_{M'} = O\left((C/c)^2 \max(\epsilon/\delta, \delta)\right)$, so detection works when $\epsilon$ is sufficiently small relative to the perturbation scale $\delta$.
+* The victim model outputs embeddings $h_i$, and the attacker can see its dimension.
+* The attacker trains their surrogate model $M’$ that outputs $h’_i$, whose dimension can be different from $h_i$. 
+* Def 3.2 only says **there exist** $\hat{h}_i$ and $\phi$ that link the two embeddings $h_i$ and $h'_i$. In particular, $\hat{h}_i$ has the same dimension as $h_i$.
+  * Our analysis uses the fact of the existence of $\hat{h}_i$ and $\phi(\cdot)$. We use $\hat{h}_i - h_i$ only in our analysis.
+  * Our **algorithm never uses $\hat{h}_i$**, only $h_i$ and $h’_i$. We never compute $h’_i - h_i$, because they can be of different dimensions.
+  * We justify Def 3.2 in the para after Eq. 1.
+
+### Definition 3.2 has no upper bound on $\epsilon$
+
+- Definition 3.2 is not intended as a binary classifier of whether $M'$ is or is not a surrogate. Rather, it parameterizes the closeness of $M'$ to $M$ through the reconstruction error $\epsilon$.
+- Our analysis makes this dependence explicit: Lemma 3.14 shows Algorithm 2 needs a perturbation scale $\delta$ such $\epsilon=o(\delta)$ for surrogate detection to succeed. We will state this up front, right after Defn 3.2
+- If \epsilon is large, the surrogate embeddings deviate from the victim embeddings even for $\phi=id$, so the surrogate is unlikely to perform as well as the victim on downstream tasks. Hence, the adversary has an incentive to keep \epsilon small (line 133).
+
+### Closure of Assumption 3.4 Under Composition
+
+- The intended statement is a closure property and we agree that it should indeed be stated as a lemma.
+- **Lemma:** If $f(\cdot)$ and $g(\cdot)$ each satisfy Assumption 3.4, then $(f \circ g)(\cdot)$ also satisfies it.
+    - **Proof:** $\nabla_w f = J_f w$ for any $w$, where $J_f$ is the Jacobian of $f(\cdot)$. By assumption, $J_f w\neq 0$ and $J_g v\neq 0$ for any vector $w$ and $v$. Then, by the chain rule of Jacobians, $\nabla_w f\circ g = J_{f\circ g} w = J_f J_g w\neq 0$. Hence, the composition $f\circ g$ also satisfies Assumption 3.4.
+
+### Meaning of $P(S(M) \setminus S(I)) \ge \gamma_M$
+
+- $P(S(M) \setminus S(I))$ is the $\mu_M$-measure of the subset $S(M) \setminus S(I)$, where $\mu_M$ is a probability measure over $S(M)$.
+- For instance, if $S(M)$ was finite and $\mu_M$ was the uniform measure on $S(M)$, then $P(S(M) \setminus S(I)) = |S(M) \setminus S(I)|/|S(M)|$.
+- Informally, if we sample a stationary point from $S(M)$ according to $\mu_M$, then "with probability at least $\gamma_M$", this point is not also a stationary point for the independent model $I$. We will rewrite Assumption 3.8 to clarify this.
+
+### Hyperparameters and Reproducibility
+
+- We used standard GNN configurations from the literature / PyTorch Geometric defaults (2–3 convolution layers with ReLU and dropout, followed by linear layers where needed). We will update the appendix with this information.
+- Our goal was to evaluate whether CopyCop works across a diverse range of trained models, and not tuning hyperparameters for the highest accuracy. The results span 5 architectures and 14 datasets, which provides evidence that CopyCop is reasonably robust to variation in architecture and training configuration. We will release the code after incorporating comments from reviews.
+
+### Explanation of Table 1 and 2
+
+- Each AUC in Table 1 is computed by classifying all surrogates (across all random seeds and all 5 GNN architectures) against all independent models (again across seeds and architectures). The tables are not from single runs.
+
+### Feasible Inputs, Shorthand, and Notation
+
+- By "feasible" we mean inputs $(G, X)$ in the support of the data distribution $\mathcal{D}$. For instance, if the node features are integers, then feasible graphs cannot have floating-point features.
+- We will also reduce notation overload: add a clearer reminder after Eq. 3 that $t = (G, X, i, w)$, avoid reusing $t$ with different meanings, and fix typographical issues such as writing $\mu_M$ consistently instead of $\mu(M)$.
+
+### Algorithm 1 and Sample Complexity
+
+- Theorem 3.9 shows that the error probability is at most $\exp(-2|T|\gamma_M^2)$, so detection confidence improves exponentially with the number of sampled stationary points. This matches Figure 3 in the Appendix, where roughly 20–40 points suffice empirically to reach near-maximal AUC.
+- **Does $S(I)$ need to be countable?** No. What matters is only the $\mu_M$-measure of the subset $S(M) \setminus S(I)$; the algorithm never samples from $S(I)$.
+- **What is Haar?** Here, Haar measure refers to the uniform probability measure on the unit sphere.
+
+### === EXTRA
 - Lemma 3.16 shows that independent models satisfy $\beta_I \ge \gamma_M$, bounded away from zero. Thus, models with small $\epsilon$ behave like surrogates, while models with large $\epsilon$ behave like independent models. We agree that this should be stated more clearly immediately after Definition 3.2, and we will revise the text accordingly.
-
-### W3 - How Can $h'_i$ and $\hat{h}_i$ Differ, and How Is $\hat{h}_i - h_i$ Well-Defined?
 
 - Model $M'$ outputs only one embedding, namely $h'_i \in \mathbb{R}^{d'}$. The vector $\hat{h}_i \in \mathbb{R}^d$ is a latent vector used only in the analysis, defined through the factorization $h'_i = \phi(\hat{h}_i)$, where $\phi : \mathbb{R}^d \to \mathbb{R}^{d'}$ is the adversarial transformation.
 - Thus, $\hat{h}_i$ and $h_i$ both live in the victim space $\mathbb{R}^d$, while $h'_i$ lives in the surrogate output space $\mathbb{R}^{d'}$. Therefore $\|\hat{h}_i - h_i\|$ is always well-defined, regardless of whether $d' = d$ or not. Only in the trivial case $\phi = \mathrm{id}$ and $d = d'$ do $\hat{h}_i$ and $h'_i$ coincide.
 
-### W4 - Closure of Assumption 3.4 Under Composition
-
-- We agree that the current wording is too informal. The intended statement is a closure property and should indeed be stated as a lemma. If $f$ and $g$ each satisfy Assumption 3.4, then $f \circ g$ also satisfies it by the chain rule: $\nabla_w (f \circ g)|_h = J_f|_{g(h)} \cdot \nabla_w g|_h$.
-- Since $g$ satisfies Assumption 3.4, $\nabla_w g|_h \neq 0$, and since $f$ satisfies Assumption 3.4, $J_f|_{g(h)}$ maps nonzero directional derivatives to nonzero vectors. Hence $\nabla_w (f \circ g)|_h \neq 0$.
-
-### W5 - Meaning of $P(S(M) \setminus S(I)) \ge \gamma_M$
-
 - The intended meaning is the $\mu_M$-measure of the subset $S(M) \setminus S(I)$, where $\mu_M$ is the probability measure over stationary points of $M$ induced by our sampling procedure. Equivalently, $P_{t \sim \mu_M}(t \notin S(I)) \ge \gamma_M$.
 - That is, if we sample a stationary point of the victim according to $\mu_M$, then with probability at least $\gamma_M$ it is not also stationary for an independent model. We will rewrite Assumption 3.8 in this explicit form.
-
-### W6 - Hyperparameters, Seeds, and Reproducibility
-
-- We used standard GNN configurations from the literature / PyTorch Geometric defaults (2–3 convolution layers with ReLU and dropout, followed by linear layers where needed).
-- Our goal was not hyperparameter optimization, but to evaluate whether CopyCop works across a diverse range of trained models. The results span 5 architectures and 14 datasets, which provides evidence that CopyCop is reasonably robust to variation in architecture and training configuration. Each AUC in Table 1 is an aggregate over all surrogate and independent models across architectures, splits, and random initializations, rather than a single-run value.
-
-### W7 - Feasible Inputs, Shorthand, and Notation
-
-- By "feasible" we mean inputs $(G, X)$ in the support of the data distribution $\mathcal{D}$.
-- We will also reduce notation overload: add a clearer reminder after Eq. 3 that $t = (G, X, i, w)$, avoid reusing $t$ with different meanings, and fix typographical issues such as writing $\mu_M$ consistently instead of $\mu(M)$.
-
-### W8 - Algorithm 1 and Sample Complexity
-
-- Theorem 3.9 shows that the error probability is at most $\exp(-2|T|\gamma_M^2)$, so detection confidence improves exponentially with the number of sampled stationary points. This matches Figure 3, where roughly 20–40 points suffice empirically to reach near-maximal AUC.
-- **Does $S(I)$ need to be countable?** No. What matters is only the $\mu_M$-measure of the subset $S(M) \setminus S(I)$; the algorithm never samples from $S(I)$.
-- **What is Haar?** Here, Haar measure refers to the uniform probability measure on the unit sphere.
