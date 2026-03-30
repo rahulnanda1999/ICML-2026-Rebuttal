@@ -4,6 +4,40 @@
 
 ## Reviewer M7hT
 
+### Notation
+* We will use n (or |V|) for the number of nodes to avoid confusion with |G|
+* $\mathcal{D}$ is a distribution over graph-feature pairs $(G, X)$.
+
+### Assumption 3.4 (No info loss)
+* Our condition ensures that $\phi(v_1) \neq \phi(v_2)$ for distinct vectors $v_1$ and $v_2$ in the same local neighborhood. Hence, $\phi(\cdot)$ is locally invertible. We will rename it to **local invertibility** assumption.
+
+### Problem setting
+* In our problem setting, **all models output graph node embeddings**. For example, the victim provides embeddings-as-a-service (Peng et al/2023) or releases model weights up to an intermediate layer (Section 1).
+* The adversary has access to the victim model's embeddings, **not downstream predictions.**
+* Other recent papers (Waheed et al/2023) also use this model.
+
+### Applicability of no-info-loss condition
+* If the attacker's embedding is lower-dimensional than the victim, then it will carry less information and will be less useful for downstream tasks. So no one will use it.
+* Hence, the attacker wants to extract the victim's embeddings accurately, and then output a lossless transformation of these embeddings.
+
+### Dimension misalignment between victim and surrogate models
+* The victim model outputs embeddings $h_i$, and the attacker can see its dimension.
+* The attacker trains their surrogate model $M’$ that outputs $h’_i$, whose dimension can be different from $h_i$. 
+* Def 3.2 only says **there exist** $\hat{h}_i$ and $\phi$ that link the two embeddings $h_i$ and $h'_i$. In particular, $\hat{h}_i$ has the same dimension as $h_i$.
+  * *Analysis*: We use the fact of the existence of $\hat{h}_i$ and $\phi(\cdot)$. We use $\hat{h}_i - h_i$ only in our analysis.
+  * *Algorithm*: We **never use $\hat{h}_i$**, only $h_i$ and $h’_i$. We never compute $h’_i - h_i$, because they can be of different dimensions.
+  * *Justification*: We justify Def 3.2 in the para after Eq. 1.
+
+### Assumption 3.8 (infinite stationary points)
+* We only need to sample stationary points. Specifically, we draw $(G, X_0, i, w)\sim\mathcal{D}_{exp}$ and find a nearby stationary point (Eq. 5). This induces a probability measure $\mu_M$ over the set of stationary points $S(M)$, whether $S(M)$ is finite, countably infinite, or uncountable.
+* The current Assumption 3.8 assumes $S(M)$ is countably infinite. We will remove this requirement.
+* If $(G, X, i, w)$ is a stationary point with $\|w\|=1$, all multiples of $w$ will also be stationary. But these are not "independent" stationary points; they are all in the same equivalence class. Hence, we only define stationary points with $\|w\|=1$.
+
+### Experimental setting
+* In our setting, the adversary has access to embeddings, not downstream predictions. Given this setting, the attack procedure is appropriate: a competent adversary would query the victim's embeddings, train surrogates across architectures, and select the best match.
+* The comparison with PreGIP is fair in this context because PreGIP also operates at the embedding level. Thus, the gap in Table 1 is not due to setup bias favoring CopyCop. It shows that model extraction and post-hoc embedding transformations remove watermark information, whereas CopyCop is designed to remain robust to such transformations.
+
+## ==== Older for Reviewer M7hT ===
 ### W1
 
 - Replace $|G|$ with $n$ (or $|V|$) for the number of nodes to avoid confusion since $G$ denotes the graph structure.
@@ -37,15 +71,17 @@
 
 ## Reviewer iNur
 
-### W1 - Convergence of the Optimization and Local Minima
+### Convergence of the Optimization and Local Minima in Eq 5
 
-- CopyCop does not require Eq. 5 to find exact stationary points. Algorithm 2 works with approximate stationary points: it computes the ratio $\hat{\beta}_Z$ (Eq. 6), which measures how close to stationary a point is relative to random points. If the optimizer returns a point where the directional derivative is small but not exactly zero, this point still yields a small $q_Z(t)$ for the victim and its surrogates, while independent models show no such pattern. Thus, exact global optimality is unnecessary: what matters is the *gap* between $q_Z(t)$ for surrogates versus independent models, not whether $q_Z(t)$ is exactly zero.
-- Empirically, this is confirmed: our solver finds only approximate stationary points, yet CopyCop achieves near-perfect AUCs (Table 1).
+- We do not need exact the exact optimum of Eq. 5. Algorithm 2 works with approximate stationary points.
+- Specifically, we compute the ratio $\beta_Z$ (Eq. 4), which measures how close to stationary a point is relative to random points. If the optimizer returns a local (but not global) optimum where the directional derivative is small enough, we still get a small ratio for the victim and its surrogates, while independent models show no such pattern. Thus, exact global optimality is unnecessary: what matters is the *gap* between $\beta_Z(t)$ for surrogates versus independent models.
 - Figure 4 shows that the sampled points are nearly orthogonal to each other, indicating that the optimizer is not collapsing to a single basin.
 - Figure 3 shows that 20–40 such approximate points suffice for reliable detection.
 - Since we use a derivative-free solver on a non-convex objective, we cannot provide global convergence guarantees, but the empirical evidence strongly suggests that approximate solutions are sufficient.
 
-### W2 - How Small Is the Reconstruction Error $\epsilon$ in Practice?
+### How small Is the reconstruction error $\epsilon$ in Practice?
+
+* Empirically, the average distance between the embeddings of victim and surrogate models over the whole dataset is only 3% of the distance between the victim and independent models.
 
 We make two observations.
 
