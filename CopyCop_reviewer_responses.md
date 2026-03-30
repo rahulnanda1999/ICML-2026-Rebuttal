@@ -74,15 +74,50 @@
 ### Convergence of the Optimization and Local Minima in Eq 5
 
 - We do not need exact the exact optimum of Eq. 5. Algorithm 2 works with approximate stationary points.
-- Specifically, we compute the ratio $\beta_Z$ (Eq. 4), which measures how close to stationary a point is relative to random points. If the optimizer returns a local (but not global) optimum where the directional derivative is small enough, we still get a small ratio for the victim and its surrogates, while independent models show no such pattern. Thus, exact global optimality is unnecessary: what matters is the *gap* between $\beta_Z(t)$ for surrogates versus independent models.
-- Figure 4 shows that the sampled points are nearly orthogonal to each other, indicating that the optimizer is not collapsing to a single basin.
-- Figure 3 shows that 20–40 such approximate points suffice for reliable detection.
+- Specifically, the ratio $\beta_Z$ (Eq. 4) measures how close to stationary a point is relative to random points. If the optimizer returns a local optimum with a small enough directional derivative, we still get a small ratio for the victim and its surrogates, but not for independent models. This is all we need.
 - Since we use a derivative-free solver on a non-convex objective, we cannot provide global convergence guarantees, but the empirical evidence strongly suggests that approximate solutions are sufficient.
+- Figure 4 shows that the sampled points are nearly orthogonal to each other, indicating that the optimizer is not collapsing to a single basin.
 
-### How small Is the reconstruction error $\epsilon$ in Practice?
+### How small is the reconstruction error $\epsilon$ in practice?
 
-* Empirically, the average distance between the embeddings of victim and surrogate models over the whole dataset is only 3% of the distance between the victim and independent models.
+* Empirically, the reconstruction error $\|\hat{h}_i-h_i\|/\|h_i\|$, averaged over a dataset, is typically less than 2%.
+* While Def 3.2 defines $\epsilon$ in terms of the sup-norm, we only need $\epsilon$ to be small over ``most'' of the dataset (Remark 3.3, line 142). The average reconstruction error of 2% suggests this is likely the case.
+* We note that the adversary *wants* a small error: a surrogate with large $\epsilon$ is less faithful to the victim's embeddings, and would be more likely to underperform the victim on downstream tasks.
+* CopyCop's performance is robust even under fine-tuning and pruning (Figures 1a, 1b), which increase the difference between the victim and surrogate models.
+* If the adversary can achieve good downstream performance without matching the victim's embeddings (say, with a lot of extra training data), CopyCop's guarantees weaken. But then the adversary that uses a lot of extra information is closer to an independent model.
 
+
+### Scalability to Higher Embedding Dimensions
+
+- Finding stationary points is a one-time offline cost for the victim model owner. Once computed, testing any suspect model $Z$ requires only forward passes through $Z$, which is fast regardless of embedding dimension.
+- Figure 3 shows that only 20–40 stationary points are needed.
+- Our current implementation uses Nevergrad (Bennet et al., 2021), a derivative-free optimizer. If we assume full access to the victim model, we can use faster optimizers that need more fine-grained information.
+- We used Nevergrad to demonstrate that CopyCop works even without fine-grained access to the victim model, but in practice the model owner would not face this limitation.
+
+### Non-linear Transformations
+
+- Lemma 3.7 holds for any differentiable invertible transformation $\phi$ satisfying Assumption 3.4; the proof uses the chain rule, which applies to any differentiable $\phi$, not just linear maps.
+- Table 2 empirically tests several non-linear transformations: $\mathrm{sigmoid}$, $\tanh$, $\arctan$, $\exp$, $\sinh$, and polynomial powers ($h^3$, $h^5$). CopyCop performs well under most of these, with exponentiation being the most challenging due to its unbounded distortion of distances (violating Assumption 3.13).
+
+### What If Embeddings Are Not Accessible?
+
+- CopyCop is designed for settings where the victim provides embeddings through an API or public model release, and the surrogate model $Z$'s embeddings can be queried. Other papers (Waheed et al, 2023) have the same setting.
+- In settings where only downstream predictions are available, CopyCop in its current form is not directly applicable.
+- We view CopyCop as complementary to existing methods: CopyCop is stronger when embeddings are accessible, while boundary-based fingerprinting methods (Lukas et al., 2021b; Peng et al., 2022) apply when only predictions are available.
+
+### Scaling to Extremely Large Graphs
+
+- The optimization in Eq. 5 operates on node features $X$, not on the graph structure $G$. The graph $G$ is sampled once and held fixed during optimization, so the per-iteration cost is dominated by a single forward pass through the GNN on $G$.
+- In our experiments, graph sizes range from 10 to 600 average nodes (Table 4). The wall-clock times in Figure 1d show that variation across datasets of different graph sizes is modest compared to variation across embedding dimensions, suggesting that, within the range we study, embedding dimension has a larger effect on runtime than graph size.
+
+### Number of Stationary Points Needed
+
+- Figure 3 shows that CopyCop needs only 20–40 stationary points to achieve near-maximum detection AUC across all GNN architectures.
+- Theoretically, Theorem 3.9 shows that the failure probability decays exponentially as $e^{-2|T|\gamma_M^2}$, so even moderate $|T|$ suffices when $\gamma_M$ is bounded away from zero.
+- We will move Figure 3 from the Appendix to the main paper given its importance.
+
+
+## EXTRA
 We make two observations.
 
 1. Lemma 3.14 shows that CopyCop's detection metric $\beta_{M'}$ scales as $O(\max(\epsilon/\delta, \delta))$, so detection degrades with $\epsilon$. The method does not require $\epsilon = 0$; it requires $\epsilon = o(\delta)$.
@@ -90,35 +125,6 @@ We make two observations.
 
 - Even under fine-tuning and pruning (Figures 1a, 1b), which would increase $\epsilon$, CopyCop remains robust.
 - We acknowledge that an attacker who approximates the victim's function without closely matching embeddings (e.g., through knowledge distillation on predictions alone) may achieve larger $\epsilon$. In such cases, CopyCop's guarantees weaken, and prediction-level fingerprinting methods may be more appropriate. We view this as a complementary regime rather than a limitation: CopyCop is designed for the embedding-accessible threat model.
-
-### W3 - Scalability to Higher Embedding Dimensions
-
-- Finding stationary points is a one-time offline cost for the victim model owner. Once computed, testing any suspect model $Z$ requires only forward passes through $Z$, which is fast regardless of embedding dimension. Figure 3 shows that only 20–40 stationary points are needed. Even at our largest embedding dimension (64), Figure 1d shows roughly 40–80 seconds per point, so the entire fingerprinting process completes in under an hour.
-- Our current implementation uses Nevergrad (Bennet et al., 2021), a derivative-free optimizer. Since the victim model owner has full access to $M$'s architecture and weights, they can compute gradients of Eq. 5 directly. Switching to a gradient-based optimizer would significantly reduce computation time, especially in higher dimensions where derivative-free methods scale poorly.
-- We used Nevergrad to demonstrate that CopyCop works even without gradient access, but in practice the model owner would not face this limitation.
-
-### W4 - Non-linear Transformations
-
-- Lemma 3.7 holds for any differentiable invertible transformation $\phi$ satisfying Assumption 3.4; the proof uses the chain rule, which applies to any differentiable $\phi$, not just linear maps.
-- Table 2 empirically tests several non-linear transformations: $\mathrm{sigmoid}$, $\tanh$, $\arctan$, $\exp$, $\sinh$, and polynomial powers ($h^3$, $h^5$). CopyCop performs well under most of these, with exponentiation being the most challenging due to its unbounded distortion of distances (violating Assumption 3.13).
-
-### W5 - What If Embeddings Are Not Accessible?
-
-- CopyCop is designed for settings where the victim provides embeddings through an API or public model release, and the suspect model $Z$'s embeddings can be queried.
-- In settings where only downstream predictions are available, CopyCop in its current form is not directly applicable.
-- We view CopyCop as complementary to existing methods: CopyCop is stronger when embeddings are accessible, while boundary-based fingerprinting methods (Lukas et al., 2021b; Peng et al., 2022) apply when only predictions are available.
-
-### W6 - Scaling to Extremely Large Graphs
-
-- The optimization in Eq. 5 operates on node features $X$, not on the graph structure $G$. The graph $G$ is sampled once and held fixed during optimization, so the per-iteration cost is dominated by a single forward pass through the GNN on $G$.
-- In our experiments, graph sizes range from 10 to 600 average nodes (Table 4). The wall-clock times in Figure 1d show that variation across datasets of different graph sizes is modest compared to variation across embedding dimensions, suggesting that, within the range we study, embedding dimension has a larger effect on runtime than graph size.
-
-### W7 - Number of Stationary Points Needed
-
-- Figure 3 directly answers this: CopyCop needs only 20–40 stationary points to achieve near-maximum detection AUC across all GNN architectures.
-- Theoretically, Theorem 3.9 shows that the failure probability decays exponentially as $e^{-2|T|\gamma_M^2}$, so even moderate $|T|$ suffices when $\gamma_M$ is bounded away from zero.
-- We will move Figure 3 from the Appendix to the main paper given its importance.
-
 
 
 ## Reviewer 3yYA
