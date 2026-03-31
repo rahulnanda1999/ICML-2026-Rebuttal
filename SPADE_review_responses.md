@@ -153,6 +153,16 @@
 - SPADE is **3–4 orders of magnitude faster** at scoring ligands than molecular docking methods and Boltz2 (1.7s/1000 ligands for SPADE versus seconds per ligand for other methods even with GPU acceleration).
 - In early-stage drug discovery, we need to quickly screen up to millions of ligands. SPADE is much better adapted for such problems.
 - Once SPADE yields a small set of candidates, MD and Boltz2-like methods can be used to winnow this smaller set further.
+- We added new experiments to test SPADE with ChemBERTa, a learned transformer-based embedding (600 dimensions). Both SPADE and GP-PI (the strongest competitor under ECFP) perform somewhat worse with ChemBERTa than with ECFP on the race-to-8 task, but the relative pattern remains the same: SPADE continues to outperform GP-PI at our main target PICs of 8 and 8.5.
+
+| | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
+|---|---|---|---|---|---|
+| **SPADE** is better | **11%** | **16%** | **17%** | **20%** | 14% |
+| GP-PI is better | 2% | 5% | 8% | 15% | **29%** |
+
+- Our results confirm recent benchmarking results (“Benchmarking Pretrained Molecular Embedding Models For Molecular Representation Learning” by Praski et al, August 2025) noting that "nearly all neural models show negligible or no improvement over the baseline ECFP molecular fingerprint."
+- Hence, we believe ECFP is a reasonable primary representation for our experiments, while the ChemBERTa results demonstrate that SPADE is not tied to handcrafted fingerprints alone. We will clarify this more explicitly in the revision.
+
 
 ### Comparison to LIT-PCBA from PubChem BioAssay.
 
@@ -170,6 +180,7 @@
 - We will remove this imprecise statement.
 - We meant to say that we are judged on the top-k ligands we find. So, at any point, our goal is to find a ligand better than the current k-th best ligand. In classification terms, the positive set always has k points, no matter how much training data we see.
 - To solve this problem, SPADE builds a robust classifier to distinguish the top-k ligands (k stays fixed) from the negative class (which grows in size). The **difference from standard classification** is that the need for robustness does not diminish as we get more data.
+
 
 ## Extra Results
 
