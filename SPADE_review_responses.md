@@ -92,8 +92,6 @@
 
 ### Choice of default value of $\sigma$
 
-, and how was it determined? Was it tuned on a subset of proteins and then applied to the rest? A data-driven selection strategy (e.g., based on nearest-neighbor distances in the embedding space) would significantly strengthen the method's practicality and reproducibility.
-
 - We tested various $\sigma$ over around 10 proteins to pick one value ($\sigma=1$). Then, we ran experiments on the other 90 proteins.
 - Figure 2 shows that results with $\sigma=0.5$ are within 5% of those for $\sigma=1$.
 
@@ -101,7 +99,7 @@
 
 - A data-driven strategy would be better when more training data is available. But in our experiments, we usually reach our target PIC of 8 within 40 samples. With so few samples, any data-driven strategy risks additional error.
 
-### Experimental results for different $k\in \{5, 10, 20\}$ ($k$=number of ligands tested in each DMTA cycle)
+### Experimental results for different $k\in 5/10/20$ ($k$=number of ligands tested in each DMTA cycle)
 
 - For the same protein and same number of training points, SPADE's average PIC with k=5 is within 0.3% ($\pm$ 1.05%) of SPADE with k=10 (metric=average top-10 PIC).
 - For k=20, the difference is 0.4% ($\pm$ 1.8%).
