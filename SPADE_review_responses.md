@@ -60,8 +60,7 @@
 
 ### A kernelized or shallow nonlinear version of SPADE
 
-- We agree that nonlinear models are more expressive.
-- But our model allows for a **closed-form expression** for the expected loss, which is key to our scalability to high-dimensional feature spaces.
+- We agree that nonlinear models are more expressive. But our model allows for a **closed-form expression** for the expected loss, which is key to our scalability to high-dimensional feature spaces.
 - We have (as yet) not found closed-form solutions for popular kernels. Without that, we would have to approximate the expected loss by sampling. However, the number of necessary samples grows quickly with the dimensionality of the feature space, and the approximation error may affect the algorithm's quality.
 
 
@@ -110,45 +109,30 @@
 ### Gaussian perturbations for discrete/binary ECFP representations
 
 - We never generate samples from the Gaussian. The Gaussian term is integrated away in the expected-loss calculation (Theorem 1).
-- While a discrete distribution could be more interpretable than a Gaussian for ECFP, we may not have a closed form expression. So, sampling would be needed to estimate the expected loss. But the number of samples grows quickly with the dimensionality of the feature space, and the approximation error due to sampling may hurt results.
+- While a discrete distribution could be more interpretable than a Gaussian for ECFP, we may not have a closed form expression. Instead, we must estimate the expected loss by sampling. But the number of samples grows quickly with the dimensionality of the feature space, and the approximation error due to sampling may hurt results.
 
-
-**Although the paper constructs a new dataset and reports promising results on it, the evaluation appears to rely primarily on the authors' own benchmark.** The empirical evidence would be much stronger if the method were also tested on more established public datasets.
-
-- We combined all available datasets with our own data, and ran experiments on the union.
-
----
-
-**Most of the comparisons are against general-purpose methods.** The evaluation would be more convincing if it included stronger baselines specifically designed for drug discovery or molecular screening scenarios.
+### Other benchmark datasets and methods
 
 - **Datasets:** We combined several popular datasets with our own data, and ran experiments on the union.
-
-- **Methods:** Griffiths et al. (NeurIPS 2024) is the most recent method that we are aware of, that is designed for such problems. We showed that SPADE outperforms it.
-
-- We agree that stronger domain-specific baselines would strengthen the paper, and we will clarify our baseline choices more explicitly. Our primary domain-relevant baseline is the Gaussian Process framework of Griffiths et al. (NeurIPS 2024), which is, to our knowledge, the most recent method specifically designed for sparse-data iterative molecular optimization of the type we study. SPADE outperforms all four GP variants in Table 1.
-
-- Many other popular methods in drug discovery address a different regime from ours. In particular, docking, free-energy perturbation, and other structure-based pipelines require protein-ligand structural information and are far slower than the setting we target here, where the goal is to screen large candidate sets over repeated DMTA cycles with minimal prior data. Likewise, widely used affinity datasets such as Davis, BindingDB, PDBbind, and related benchmarks are valuable resources, but many are either too small or designed for different prediction tasks rather than the race-to-8 setting studied here. This is precisely why we constructed a larger benchmark by combining established public data with our new PubChem-derived data.
+- **Methods:** Our primary domain-relevant baseline is the Gaussian Process framework of Griffiths et al. (NeurIPS 2024), which is, to our knowledge, the most recent method specifically designed for sparse-data iterative molecular optimization of the type we study. SPADE outperforms all four GP variants in Table 1.
+- **Other problem settings**: Many other popular methods in drug discovery address a different regime from ours.
+    * In particular, docking, free-energy perturbation, and other structure-based pipelines require protein-ligand structural information. They are far slower than the setting we target here, where the goal is to screen large candidate sets over repeated DMTA cycles with minimal prior data.
+    * Likewise, widely used affinity datasets such as Davis, BindingDB, PDBbind, and related benchmarks are valuable resources, but many are either too small or designed for different prediction tasks rather than the race-to-8 setting studied here. This is precisely why we constructed a larger benchmark by combining established public data with our new PubChem-derived data.
 
 
-**This makes it unclear how SPADE would compare against or integrate with deep learning molecular representations.**
+### Integrating with deep learning molecular representations
 
-*Have the authors considered using deep molecular representation learning methods? For example, could SPADE be combined with learned molecular embeddings from graph neural networks or transformer-based models, instead of relying only on handcrafted fingerprints such as ECFP or MACCS?*
+- SPADE is orthogonal to the choice of molecular representation or embedding. The main hyperparameter that may depend on the embedding is the robustness scale $\sigma$, although in our experiments $\sigma=1$ worked well across all representations we tested.
 
-*How sensitive is the method to the choice of molecular representation? Since the current results are mainly based on fingerprint features, it would be helpful to know whether the method still performs well when paired with more expressive learned representations.*
-
-- Yes. SPADE is orthogonal to the choice of molecular representation: it operates on ligand embeddings, regardless of whether they are handcrafted fingerprints or learned neural representations. In principle, SPADE can therefore be combined with graph-neural-network or transformer-based molecular embeddings without any change to the core algorithm. The main hyperparameter that may depend on the embedding is the robustness scale σ, although in our experiments σ worked well across all representations we tested.
-
-- To examine this directly, we tested SPADE with ChemBERTa, a learned transformer-based embedding (600 dimensions). Both SPADE and GP-PI (the strongest competitor under ECFP) perform somewhat worse with ChemBERTa than with ECFP on the race-to-8 task, but the relative pattern remains the same: SPADE continues to outperform GP-PI at our main target PICs of 8 and 8.5.
-
-**ChemBERTa (normalized) — Target PIC:**
+- We added new experiments test SPADE with ChemBERTa, a learned transformer-based embedding (600 dimensions). Both SPADE and GP-PI (the strongest competitor under ECFP) perform somewhat worse with ChemBERTa than with ECFP on the race-to-8 task, but the relative pattern remains the same: SPADE continues to outperform GP-PI at our main target PICs of 8 and 8.5.
 
 | | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
 |---|---|---|---|---|---|
-| SPADE is better | 11% | 16% | 17% | 20% | 14% |
-| GP-PI is better | 2% | 5% | 8% | 15% | 29% |
+| **SPADE** is better | **11%** | **16%** | **17%** | **20%** | 14% |
+| GP-PI is better | 2% | 5% | 8% | 15% | **29%** |
 
-This is also consistent with recent benchmarking results (https://arxiv.org/html/2508.06199v2) showing that ECFP remains a very strong baseline for molecular representation learning. For this reason, we believe ECFP is a reasonable primary representation for our experiments, while the ChemBERTa results demonstrate that SPADE is not tied to handcrafted fingerprints alone. We will clarify this more explicitly in the revision.
-
+- Our results confirm recent benchmarking results (“Benchmarking Pretrained Molecular Embedding Models For Molecular Representation Learning” by Praski et al, August 2025) noting that "nearly all neural models show negligible or no improvement over the baseline ECFP molecular fingerprint."
+- Hence, we believe ECFP is a reasonable primary representation for our experiments, while the ChemBERTa results demonstrate that SPADE is not tied to handcrafted fingerprints alone. We will clarify this more explicitly in the revision.
 
 
 ## Reviewer wkP5
