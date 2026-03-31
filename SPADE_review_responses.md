@@ -14,9 +14,7 @@
 ### SPADE relies heavily on the richness of the feature space.
 
 - The fact that SPADE does much better with ECFP (2048-dim) rather than MACCS (167-dim) embeddings shows that SPADE is able to learn from high-dimensions in spite of the small training data.
-- We have also run experiments with the ChemBERTa embedding, which shows a similar pattern as MACCS and ECFP.
-
-**ChemBERTa (normalized) — Target PIC:**
+- We have also run experiments with the (normalized) ChemBERTa embedding (600-dim), which shows a similar pattern as MACCS and ECFP.
 
 | Target PIC $\Rightarrow$ | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
 |---|---|---|---|---|---|
@@ -34,55 +32,79 @@
 
 ## Reviewer o72q
 
-**TabPFN could not handle the 2,048-dimensional ECFP embeddings** and was therefore run with the 167-dimensional MACCS embeddings instead (line 183). However, Table 5 explicitly shows that switching from ECFP to MACCS degrades SPADE's own MLT by 19%–29% at target PICs 8–8.5. This means TabPFN's performance in Table 1 is systematically underestimated. For a rigorous experimental paper, the authors should at minimum provide a complete comparison in which all methods uniformly use MACCS embeddings.
+### Comparison of TabPFN and SPADE on MACCS embedding
 
-- The paper showed a fair comparison of SPADE vs TabPFN using MACCS for both (all other results use ECFP). If we use ECFP for SPADE and MACCS for TabPFN, then:
+- The comparison of SPADE versus MACCS (Table 2) showed a fair comparison using MACCS for both (all other results in Table 2 use ECFP). To clarify:
+
+| Target PIC $\Rightarrow$ | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
+|---|---|---|---|---|---|
+| **SPADE (MACCS) is better** | **8%** | **9%** | **12%** | **14%** | **24%** |
+| TabPFN (MACCS) is better | 5% | 5% | 8% | 9% | 4% |
+
+- If we use ECFP for SPADE and MACCS for TabPFN, then the difference is much greater:
 
 | | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
 |---|---|---|---|---|---|
-| SPADE (ECFP) is better | 42% | 46% | 49% | 45% | 43% |
+| **SPADE (ECFP) is better** | **42%** | **46%** | **49%** | **45%** | **43%** |
 | TabPFN (MACCS) is better | 2% | 1% | 1% | 3% | 1% |
 
 
+### Theoretical optimum or bound for hyperparameter $\sigma$
 
-**σ is the only hyperparameter that significantly affects SPADE's performance.** Yet the paper provides neither a theoretical optimum nor bound for σ.
+- $\sigma$ denotes regularization strength. Theoretical results regarding the optimal regularization usually consider the large-$n$ regime, but we have small $n$ ($n=40$, for target PIC=8) and the number of positive samples stays fixed (only the top-k ligands seen so far are in our positive set).
+- Instead, the practical problem is to select a good $\sigma$ for any new protein, since we will not have enough samples to cross-validate. We show that **a single default value works well** for all proteins (specifically, $\sigma=1$ for ECFP).
 
-- σ denotes regularization strength. Theoretical results regarding the optimal regularization usually consider the large-n regime, but we have small n (n=40, for target PIC=8) and the number of positive samples stays fixed (only the top-k ligands seen so far are in our positive set). We show that a single default value of σ works well for all proteins.
+### The meaning of "Δ PIC" in Table 6
 
+- This denotes the difference in PICs between having/not-having the 10-ligand limit (for any DMTA cycle). We will clarify this in the paper.
 
+### A kernelized or shallow nonlinear version of SPADE
 
-**The meaning of "Δ PIC" in Table 6 is unclear.**
-
-- The difference in PICs between having/not-having the 10-ligand limit (for any DMTA cycle).
-
-
-**SPADE uses a linear classifier.** When high-PIC ligands form nonlinear structures in the embedding space, a linear model may have insufficient expressive power. The paper neither discusses this limitation nor experimentally examines under what conditions the linearity assumption breaks down. Even if the authors deliberately chose linearity for robustness, an ablation comparing against a kernelized or shallow nonlinear variant would substantiate this design choice.
-
-- We agree that nonlinear models are more expressive. But our model allows for a closed-form expression for the expected loss, which is key to our scalability to high-dimensional feature spaces. Extending closed-form (approximate) solutions for kernels is future work.
+- We agree that nonlinear models are more expressive.
+- But our model allows for a **closed-form expression** for the expected loss, which is key to our scalability to high-dimensional feature spaces.
+- We have (as yet) not found closed-form solutions for popular kernels. Without that, we would have to approximate the expected loss by sampling. However, the number of necessary samples grows quickly with the dimensionality of the feature space, and the approximation error may affect the algorithm's quality.
 
 
-### Q1. Can the authors provide a complete comparison in which all methods uniformly use MACCS embeddings? If SPADE still outperforms TabPFN under identical embedding conditions, the experimental conclusions become substantially more convincing.
+### Comparison of all methods using MACCS embeddings
 
-ECFP gives the best results (mean-ligands-to-target PIC=8 is only 40 for SPADE and 41 for GP-PI). GP-PI is the closest competitor across both embeddings, but SPADE is 3× faster (Table 4 of paper). GP-UCB is good for MACCS but much worse for ECFP. We also tested with ChemBERTa (600 dimensions). For all methods, the median ligands-to-target is around 15% worse than ECFP. Between methods, we see the same patterns (SPADE and GP-PI are close, though SPADE is better in the race-to-8).
+- The Table below shows the median (over 100 proteins) of the mean-ligands-to-target metric for PIC=8 (lower is better):
 
-**Mean ligands-to-target PIC=8:**
-
-| | SPADE | GP-M | GP-UCB | GP-PI | GP-EI | TabPFN | TabM |
+|  | SPADE | GP-M | GP-UCB | GP-PI | GP-EI | TabPFN | TabM |
 |---|---|---|---|---|---|---|---|
 | MACCS | 48 | 54 | 48 | 46 | 51 | 48 | 55 |
-| ECFP | 40 | 53 | 51 | 41 | 44 | x | 59 |
+| ECFP | **40** | 53 | 51 | 41 | 44 | x | 59 |
 
-### Q2. What is the specific default value of σ, and how was it determined? Was it tuned on a subset of proteins and then applied to the rest? A data-driven selection strategy (e.g., based on nearest-neighbor distances in the embedding space) would significantly strengthen the method's practicality and reproducibility.
+- ECFP gives the best results (mean-ligands-to-target PIC=8 is only 40 for SPADE and 41 for GP-PI). GP-PI is the closest competitor across both embeddings, but SPADE is 3× faster (Table 4 of paper). GP-UCB is good for MACCS but much worse for ECFP.
+- The following table compares SPADE against its closest competitor (GP-PI). It shows that SPADE is better until PIC=8, and both are roughly comparable for PIC=8.5.
 
-We selected σ over around 10 proteins and then ran experiments on the other 90. Figure 2 shows that results with σ are within 5% of those for the optimum. A data-driven strategy would be better when more training data is available. But in our experiments, we usually reach our target PIC of 8 within 40 samples. With so few samples, any data-driven strategy risks additional error. Sigma can depend on the embedding.
+| Target PIC $\Rightarrow$ | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
+|---|---|---|---|---|---|
+| SPADE (MACCS) is better | **10%** | **10%** | **16%** | 13% | 14% |
+| GP-PI (MACCS) is better | 3% | 6% | 8% | **16%** | **26%** |
 
-### Q3. Have the authors experimented with a kernelized variant of SPADE? If the linear classifier is indeed sufficient, an ablation against a kernel method would powerfully justify the current design choice.
+-    We also tested with ChemBERTa (600 dimensions). For all methods, the median ligands-to-target is around 15% worse than ECFP. Between methods, we see the same patterns (SPADE and GP-PI are close, though SPADE is better in the race-to-8).
 
-See above.
+| Target PIC $\Rightarrow$ | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
+|---|---|---|---|---|---|
+| **SPADE (ChemBERTa) is better** | **11%** | **16%** | **17%** | **20%** | 14% |
+| GP-PI (ChemBERTa) is better | 2% | 5% | 8% | 15% | **29%** |
 
-### Q4. Can the authors provide experimental results for k ∈ {5, 10, 20}? If SPADE is truly insensitive to k, this claim deserves to be supported by data in the main text rather than stated without evidence.
 
-For the same number of training points, SPADE with k=5 is within 0.3% (1.05%) of SPADE with k=10 (metric=average top-10 PIC). For k=20, the difference is 0.4% (1.8%).
+### Choice of default value of $\sigma$
+
+, and how was it determined? Was it tuned on a subset of proteins and then applied to the rest? A data-driven selection strategy (e.g., based on nearest-neighbor distances in the embedding space) would significantly strengthen the method's practicality and reproducibility.
+
+- We tested various $\sigma$ over around 10 proteins to pick one value ($\sigma=1$). Then, we ran experiments on the other 90 proteins.
+- Figure 2 shows that results with $\sigma=0.5$ are within 5% of those for $\sigma=1$.
+
+### Data-driven choice of $\sigma$
+
+- A data-driven strategy would be better when more training data is available. But in our experiments, we usually reach our target PIC of 8 within 40 samples. With so few samples, any data-driven strategy risks additional error.
+
+### Experimental results for different $k\in \{5, 10, 20\}$ ($k$=number of ligands tested in each DMTA cycle)
+
+- For the same protein and same number of training points, SPADE's average PIC with k=5 is within 0.3% ($\pm$ 1.05%) of SPADE with k=10 (metric=average top-10 PIC).
+- For k=20, the difference is 0.4% ($\pm$ 1.8%).
 
 
 ## Reviewer va8h
