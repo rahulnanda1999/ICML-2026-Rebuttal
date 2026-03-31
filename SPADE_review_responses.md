@@ -2,27 +2,34 @@
 
 ## Reviewer JGsU
 
-**Sensitivity to Hyperparameters:** While the authors claim SPADE has few hyperparameters, the sensitivity analysis (Figure 2) reveals that performance is highly sensitive to the robustness parameter σ.
+### Sensitivity to the robustness hyperparameter $\sigma$
 
-- It is not surprising that the robustness parameter matters in small-data problems. We show that one default value of σ works well for all 100 proteins.
+- The hyperparameter $\sigma$ acts like a regularization parameter. It is not surprising that the robustness parameter matters in small-data problems.
+- We show that one default value of $\sigma=1$ works well for all 100 proteins. Indeed, it works well for both ECFP and MACCS embeddings.
 
-**Failure at Extreme PICs:** The algorithm struggles when targets are exceptionally rare (PIC 9), sometimes failing to reach the goal within the 400-test limit.
+### Failure to reach extremely rare PIC=9
 
 - This is expected; GP-EI and GP-PI fail at the same rate as SPADE, and GP-UCB, GP-M, and TabM fail at about 45% higher rate.
 
-**Embedding Dependency:** Performance drops by up to 29% when moving from high-dimensional ECFP (2,048-dim) to lower-dimensional MACCS (167-dim) embeddings, suggesting the model relies heavily on the richness of the feature space.
+### SPADE relies heavily on the richness of the feature space.
 
-- SPADE is able to learn from high-dimensions in spite of the small training data. We have also run experiments with the ChemBERTa embedding, which shows a similar pattern as MACCS and ECFP.
+- The fact that SPADE does much better with ECFP (2048-dim) rather than MACCS (167-dim) embeddings shows that SPADE is able to learn from high-dimensions in spite of the small training data.
+- We have also run experiments with the ChemBERTa embedding, which shows a similar pattern as MACCS and ECFP.
 
 **ChemBERTa (normalized) — Target PIC:**
 
-| | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
+| Target PIC $\Rightarrow$ | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
 |---|---|---|---|---|---|
-| SPADE is better | 11% | 16% | 17% | 20% | 14% |
-| GP-PI is better | 2% | 5% | 8% | 15% | 29% |
+| **SPADE is better** | **11%** | **16%** | **17%** | **20%** | 14% |
+| GP-PI is better | 2% | 5% | 8% | 15% | **29%** |
 
-This is also consistent with recent benchmarking results (https://arxiv.org/html/2508.06199v2) showing that ECFP remains a very strong baseline for molecular representation learning. For this reason, we believe ECFP is a reasonable primary representation for our experiments, while the ChemBERTa results demonstrate that SPADE is not tied to handcrafted fingerprints alone. We will clarify this more explicitly in the revision.
+- Our results confirm recent benchmarking results (“Benchmarking Pretrained Molecular Embedding Models For Molecular Representation Learning” by Praski et al, August 2025) noting that "nearly all neural models show negligible or no improvement over the baseline ECFP molecular fingerprint."
+- Hence, we believe ECFP is a reasonable primary representation for our experiments, while the ChemBERTa results demonstrate that SPADE is not tied to handcrafted fingerprints alone. We will clarify this more explicitly in the revision.
 
+
+### === EXTRA
+
+- https://arxiv.org/html/2508.06199v2
 
 
 ## Reviewer o72q
