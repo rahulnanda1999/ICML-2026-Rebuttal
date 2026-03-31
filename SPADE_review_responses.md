@@ -107,10 +107,10 @@
 
 ## Reviewer va8h
 
-**The method applies continuous Gaussian perturbations to ECFP representations.** Since ECFP fingerprints are inherently discrete/binary molecular descriptors, adding continuous Gaussian noise may be somewhat unnatural and raises questions about whether the perturbation is chemically meaningful.
+### Gaussian perturbations for discrete/binary ECFP representations
 
-- We never generate samples. The Gaussian term is integrated away in the expected-loss calculation (Theorem 1). For a discrete distribution, we may not have a closed form expression and sampling would be needed.
-
+- We never generate samples from the Gaussian. The Gaussian term is integrated away in the expected-loss calculation (Theorem 1).
+- While a discrete distribution could be more interpretable than a Gaussian for ECFP, we may not have a closed form expression. So, sampling would be needed to estimate the expected loss. But the number of samples grows quickly with the dimensionality of the feature space, and the approximation error due to sampling may hurt results.
 
 
 **Although the paper constructs a new dataset and reports promising results on it, the evaluation appears to rely primarily on the authors' own benchmark.** The empirical evidence would be much stronger if the method were also tested on more established public datasets.
