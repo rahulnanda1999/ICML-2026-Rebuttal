@@ -157,9 +157,9 @@ We make two observations.
 
 ### Missing Related Work
 
-**Chen et al. (2021).** The white-box schemes (V1/V2) are not applicable in our setting because a surrogate GNN trained via model extraction is a separately trained model with different weights, architecture, and sparsity patterns; there is no shared mask from which to extract a signature. The black-box scheme (V3) is a trigger-based watermark / backdoor method. Prior works shows that such triggers often do not survive model extraction (Section 2). We also compare against the latest GNN watermarking methods (PreGIP) and show that CopyCop outperforms it (Table 1).
+**Chen et al. (2021).** The white-box schemes (V1/V2) do not apply in our setting, since an extracted surrogate GNN is a separately trained model with different weights, architecture, and sparsity, so no shared mask exists. The black-box scheme (V3) is based on watermarks. We show that CopyCop outperforms PreGIP, a recent GNN watermark scheme (Table 1).
 
-**Wu et al. (2024).** This work addresses *integrity verification*, i.e., whether a deployed model has been tampered with, whereas CopyCop addresses *ownership verification*, i.e., whether a separately trained suspect model is a surrogate of the victim. Their method assumes the attacker modifies the same deployed model and checks whether predictions on fingerprint nodes still match pre-recorded labels. That threat model is fundamentally different from ours, where the suspect is a new model trained to mimic the victim.
+**Wu et al. (2024).** This work studies integrity verification of a deployed model, whereas CopyCop addresses ownership verification of a separately trained surrogate. Their method assumes modification of the same deployed model, which differs fundamentally from our setting where the suspect is independently trained to mimic the victim.
 
 ### How can $h'_i$ and $\hat{h}_i$ differ, and how is $\hat{h}_i - h_i$ well-defined?
 
@@ -200,13 +200,13 @@ We make two observations.
 ### Feasible Inputs, Shorthand, and Notation
 
 - By "feasible" we mean inputs $(G, X)$ in the support of the data distribution $\mathcal{D}$. 
-- We will also reduce notation overload: add a clearer reminder after Eq. 3 that $t = (G, X, i, w)$, avoid reusing $t$ with different meanings, and fix typographical issues such as writing $\mu_M$ consistently instead of $\mu(M)$.
+- We will reduce notation overload: add a clearer reminder after Eq. 3 that $t = (G, X, i, w)$, avoid reusing $t$ with different meanings, and fix typo issues such as writing $\mu_M$ consistently instead of $\mu(M)$.
 
 ### Algorithm 1 and Sample Complexity
 
 - Detection confidence improves exponentially with the number of sampled stationary points (Theorem 3.9). Figure 3 in the Appendix shows that 20–40 points suffice empirically to reach near-maximal AUC.
 - **Does $S(I)$ need to be countable?** No. What matters is only the $\mu_M$-measure of the subset $S(M) \setminus S(I)$; the algorithm never samples from $S(I)$.
-- **What is Haar?** Here, Haar measure refers to the uniform probability measure on the unit sphere.
+- **What is Haar?** Haar measure refers to the uniform probability measure on the unit sphere.
 
 ### === EXTRA
 - Lemma 3.16 shows that independent models satisfy $\beta_I \ge \gamma_M$, bounded away from zero. Thus, models with small $\epsilon$ behave like surrogates, while models with large $\epsilon$ behave like independent models. We agree that this should be stated more clearly immediately after Definition 3.2, and we will revise the text accordingly.

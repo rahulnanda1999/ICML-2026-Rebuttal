@@ -56,7 +56,7 @@
 
 ### The meaning of "Δ PIC" in Table 6
 
-- This denotes the difference in PICs between having/not-having the 10-ligand limit (for any DMTA cycle). We will clarify this in the paper.
+- This denotes the difference in PICs between the settings with and without the 10-ligand limit (for any DMTA cycle). We will clarify this in the paper.
 
 ### A kernelized or shallow nonlinear version of SPADE
 
@@ -124,7 +124,7 @@
 
 - SPADE is orthogonal to the choice of molecular representation or embedding. The main hyperparameter that may depend on the embedding is the robustness scale $\sigma$, although in our experiments $\sigma=1$ worked well across all representations we tested.
 
-- We added new experiments test SPADE with ChemBERTa, a learned transformer-based embedding (600 dimensions). Both SPADE and GP-PI (the strongest competitor under ECFP) perform somewhat worse with ChemBERTa than with ECFP on the race-to-8 task, but the relative pattern remains the same: SPADE continues to outperform GP-PI at our main target PICs of 8 and 8.5.
+- We added new experiments to test SPADE with ChemBERTa, a learned transformer-based embedding (600 dimensions). Both SPADE and GP-PI (the strongest competitor under ECFP) perform somewhat worse with ChemBERTa than with ECFP on the race-to-8 task, but the relative pattern remains the same: SPADE continues to outperform GP-PI at our main target PICs of 8 and 8.5.
 
 | | 7.0 | 7.5 | 8.0 | 8.5 | 9.0 |
 |---|---|---|---|---|---|
@@ -146,7 +146,7 @@
 
 ### Even random sampling would quickly identify high-affinity ligands in such a binder-rich dataset
 
-- We compare SPADE against the Random baseline in Table 1, showing that SPADE is far better than Random. For example, to reach PIC=8, SPADE need around 40 samples while Random needs 76.
+- We compare SPADE against the Random baseline in Table 1, showing that SPADE is far better than Random. For example, to reach PIC=8, SPADE needs around 40 samples while Random needs 76.
 
 ### Comparison against standard molecular docking or DL-based methods like Boltz2
 
