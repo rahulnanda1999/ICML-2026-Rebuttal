@@ -157,14 +157,13 @@ We make two observations.
 
 ### Missing Related Work
 
-**Chen et al. (2021).** The white-box schemes (V1/V2) do not apply in our setting, since an extracted surrogate GNN is a separately trained model with different weights, architecture, and sparsity, so no shared mask exists. The black-box scheme (V3) is based on watermarks. We show that CopyCop outperforms PreGIP, a recent GNN watermark scheme (Table 1).
+**Chen et al. (2021):** The white-box schemes (V1/V2) do not apply in our setting, since an extracted surrogate GNN is a separately trained model with different weights, architecture, and sparsity, so no shared mask exists. The black-box scheme (V3) uses watermarks, which are fragile under extraction (Section 2). CopyCop also outperforms PreGIP, a recent GNN watermark scheme (Table 1).
 
-**Wu et al. (2024).** This work studies integrity verification of a deployed model, whereas CopyCop addresses ownership verification of a separately trained surrogate. Their method assumes modification of the same deployed model, which differs fundamentally from our setting where the suspect is independently trained to mimic the victim.
+**Wu et al. (2024):** This studies integrity verification of a deployed model, whereas CopyCop addresses ownership verification of a separately trained surrogate. Their method assumes modification of the same deployed model, which differs fundamentally from our setting where the suspect is independently trained to mimic the victim.
 
 ### How can $h'_i$ and $\hat{h}_i$ differ, and how is $\hat{h}_i - h_i$ well-defined?
 
-* The victim model outputs embeddings $h_i$, and the attacker can see its dimension.
-* The attacker trains their surrogate model $M’$ that outputs $h’_i$, whose dimension can be different from $h_i$. 
+* The victim and surrogate models $M$ and $M'$ output embeddings $h_i$ and $h’_i$, whose dimensions can be different.
 * Def 3.2 only says **there exist** $\hat{h}_i$ and $\phi$ that link the two embeddings $h_i$ and $h'_i$. In particular, $\hat{h}_i$ has the same dimension as $h_i$.
   * Our analysis uses the fact of the existence of $\hat{h}_i$ and $\phi(\cdot)$. We use $\hat{h}_i - h_i$ only in our analysis.
   * Our **algorithm never uses $\hat{h}_i$**, only $h_i$ and $h’_i$. We never compute $h’_i - h_i$, because they can be of different dimensions.
@@ -172,8 +171,8 @@ We make two observations.
 
 ### Definition 3.2 has no upper bound on $\epsilon$
 
-- Definition 3.2 is not intended as a binary classifier of whether $M'$ is or is not a surrogate. Rather, it parameterizes the closeness of $M'$ to $M$ through the reconstruction error $\epsilon$.
-- Our analysis makes this dependence explicit: Lemma 3.14 shows Algorithm 2 needs a perturbation scale $\delta$ such $\epsilon=o(\delta)$ for surrogate detection to succeed. We will state this up front, right after Defn 3.2
+- Definition 3.2 parameterizes the closeness of models $M'$ and $M$ through $\epsilon$.
+- We can detect surrogates when $\epsilon$ is small. Lemma 3.14 shows Algorithm 2 needs a perturbation scale $\delta$ such $\epsilon=o(\delta)$ for surrogate detection to succeed. We will state this up front, right after Defn 3.2
 - If \epsilon is large, the surrogate embeddings deviate from the victim embeddings even for $\phi=id$, so the surrogate is unlikely to perform as well as the victim on downstream tasks. Hence, the adversary has an incentive to keep \epsilon small (line 133).
 
 ### Closure of Assumption 3.4 Under Composition
