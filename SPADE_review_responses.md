@@ -137,37 +137,39 @@
 
 ## Reviewer wkP5
 
-**The benchmark dataset used to evaluate SPADE has an extremely unrealistic affinity distribution:** the authors report a 7% hit rate for ligands with pIC50 ≥ 8 (10nM) and a median pIC50 of 5.9 (~1μM) in Section 3. This extreme bias towards binders means reported performance gains may not translate to real use cases; even random sampling would quickly identify high-affinity ligands in such a binder-rich dataset, making it impossible to assess SPADE's true value relative to trivial baselines. Typical real-world high-throughput screening (HTS) runs often yield hit rates of ~0.2% or lower, with poor pIC50.
+### Dataset has unrealistic affinity distribution
 
-- If we draw stratified samples to mimic real-world PIC distributions, we would be left with too few high-PIC ligands. We show the comparison against Random.
+- We agree that PICs are much lower in real-world screening settings. However, we are limited by the availability of public data.
+- We combined data from the Davis and BindingDB datasets along with our own 1.5M samples from PubChem. For every protein, we used the union of all ligands for that protein in all these datasets.
+- If we draw stratified samples to mimic real-world PIC distributions, we would be left with too few high-PIC ligands.
+- Even if the numbers reported in Table 1 would be larger in real-world settings, the results provide a fair comparison between various methods. 
+
+### Even random sampling would quickly identify high-affinity ligands in such a binder-rich dataset
+
+- We compare SPADE against the Random baseline in Table 1, showing that SPADE is far better than Random. For example, to reach PIC=8, SPADE need around 40 samples while Random needs 76.
+
+### Comparison against standard molecular docking or DL-based methods like Boltz2
+
+- SPADE is **3–4 orders of magnitude faster** at scoring ligands than molecular docking methods and Boltz2 (1.7s/1000 ligands for SPADE versus seconds per ligand for other methods even with GPU acceleration).
+- In early-stage drug discovery, we need to quickly screen up to millions of ligands. SPADE is much better adapted for such problems.
+- Once SPADE yields a small set of candidates, MD and Boltz2-like methods can be used to winnow this smaller set further.
+
+### Comparison to LIT-PCBA from PubChem BioAssay.
+
+- Our data was curated from PubChem BioAssay. But LIT-PCBA is a smaller dataset (15 proteins with 7,761 actives and 382,674 inactives) than our 1.5M ligand-protein affinity dataset.
+
+### Effect of the activity cliff
+
+- SPADE handles activity cliffs by treating them as local discrimination problems: each classifier separates a top ligand from growing negatives, making low‑affinity near‑neighbors highly informative.
+- This avoids assumptions of local smoothness, allows rapid learning of the feature combinations defining high‑PIC ligands from few examples, and is better suited to sharp local affinity changes.
+- However, we agree that extreme cliffs still challenge embedding‑based methods when key chemical drivers are not represented in the embeddings.
 
 
+### "Despite gaining more data, our task becomes harder", is ambiguous.
 
-**The lack of comparison to standard virtual screening baselines severely limits assessment of SPADE's practical value.** If SPADE does not outperform standard molecular docking or DL-based methods like Boltz2 (which requires no prior target binding data, the key use case for SPADE), the method would have limited utility for real drug discovery teams.
-
-- SPADE is 3–4 orders of magnitude faster at scoring ligands than molecular docking methods and Boltz2 (1.7s/1000 ligands for SPADE versus seconds per ligand for other methods even with GPU acceleration). Both molecular docking and Boltz2 rely on protein-ligand representations. MD in the form of physics-based force-field representations and Boltz2 as the co-folded embedding. Both methods are significantly lower throughput and slower than SPADE. SPADE can virtually screen thousands of compounds in seconds on a single processor. Conversely, GPU-accelerated MD processes and the most optimized Boltz2 inference runs require tens of seconds per sample on a GPU.
-
-
-
-**The authors mention a new 1.5M ligand-protein affinity dataset derived from PubChem.** Is it the dataset PubChem BioAssay? If so, existing benchmarks including LIT-PCBA already curate binding data from PubChem BioAssay.
-
-- The data was curated from PubChem BioAssay. LIT-PCBA is a smaller dataset (15 proteins with 7,761 actives and 382,674 inactives) than our 1.5M ligand-protein affinity dataset.
-
-
-
-**SPADE builds local classifiers around each top positive ligand.** Will the activity cliff effect introduce substantial label noise in local model training? Especially the activity cliff effect will be very strong when seeking high affinity binders.
-
-- If seemingly similar ligands have very different PICs, SPADE can identify precisely what feature combinations made the high-PIC ligand special. Thus, even if SPADE cannot "guess" what feature will help us surmount an activity cliff, SPADE can quickly learn this after seeing one or two samples.
-
-- We agree that activity cliffs are a challenging phenomenon: structurally similar ligands can sometimes have very different affinities. SPADE does not assume that local neighborhoods in embedding space are uniformly smooth or that all near-neighbors of a strong ligand are also strong binders. Instead, each classifier is trained to distinguish one top ligand from the growing set of negatives. If a near-neighbor of a top ligand has poor affinity, that example becomes a particularly informative negative, helping the classifier focus on the feature combinations that distinguish the high-PIC ligand from superficially similar but weaker ones.
-
-- In this sense, SPADE is not trying to interpolate a smooth global activity landscape; it is solving a local discrimination problem around the current top ligands. This makes it comparatively well-suited to settings where sharp local changes in affinity occur. At the same time, we agree that extreme activity cliffs can still make the task harder for any embedding-based method, including SPADE, because the representation may not fully expose the chemical factors responsible for the jump in PIC.
-
-
-
-**The statement in Section 3 Challenge 4, "despite gaining more data, our task becomes harder", is ambiguous.** Why does the task become harder for a classifier? Although it would be harder to find a ligand better than a higher PIC, the training task won't be harder for a classifier as it always has a similar number of positive and negative samples. If the harder task means to find a better ligand, how does SPADE tackle this problem (which I didn't find in your method)?
-
-- We are judged on the top-k ligands we find. So, at any point, our goal is to find a ligand better than the current k-th best ligand. In classification terms, the positive set always has k points, no matter how much training data we see. Our wording is imprecise. SPADE tries to distinguish the top-k ligands (k stays fixed) from the negative class (which grows in size) by a robust classifier. The need for robustness does not diminish as we get more data.
+- We will remove this imprecise statement.
+- We meant to say that we are judged on the top-k ligands we find. So, at any point, our goal is to find a ligand better than the current k-th best ligand. In classification terms, the positive set always has k points, no matter how much training data we see.
+- To solve this problem, SPADE builds a robust classifier to distinguish the top-k ligands (k stays fixed) from the negative class (which grows in size). The **difference from standard classification** is that the need for robustness does not diminish as we get more data.
 
 ## Extra Results
 
