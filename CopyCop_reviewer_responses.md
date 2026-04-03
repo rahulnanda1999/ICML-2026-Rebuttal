@@ -264,7 +264,7 @@ To answer (c): The adversary can choose any embedding dimension for $h'_i$, but 
 
 All models: If the final output is at the node level, there is a final linear layer. If the final output is at the graph level, there is a GlobalMeanPooling + Dropout + Linear layer at the end.
 
-All seeds are fixed. However, we think (but are not sure) that Nevergrad's outputs might depend on the system load (we use nevergrad to solve Eq. 5).
+All seeds are fixed. However, it is possible (we are not sure) that Nevergrad's outputs might depend on the system load (we use Nevergrad to solve Eq. 5).
 
 ### (i) Repo
 The code is available at [here](https://anonymous.4open.science/r/CopyCop---Graph-Ownership-Verification--120D/README.md)
