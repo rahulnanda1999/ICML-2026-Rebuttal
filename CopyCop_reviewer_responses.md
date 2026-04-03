@@ -239,3 +239,13 @@ We make two observations.
 |Coco (stationary) | 0.02 | 0.05 | 0.07 | 0.05 | 0.09 |
 
 * For very large graphs, we **do not need to optimize over the entire $X$**. Since the goal is to get a stationary point for the embedding of one node, we can optimize over the features of that node and the k-nearest-neighbor nodes in its neighborhood. This would give enough flexibility to find a good stationary point, and the complexity would depend on $k$, not the number of nodes.
+
+## b7h2
+
+### How $h'_i(G,X;M')$ and $\hat{h}_i(G,X;M')$ can be different if they are both computed on the same G and X
+
+Here's an example. Suppose the attacker decides to use $\phi(x)= Mx$, where $x \in\mathbb{R}^d$ and $M\in\mathbb{R}^{d'\times d}$ is a fixed matrix. The attacker collects input-output samples of the form $((G,X), {h_i})$ from the victim model $M$, and trains a GNN to match these pairs. That is, given (G,X), this GNN outputs $\hat{h}_i$ which are very close to $h_i$, and this behavior generalizes to unseen $(G,X)$ too. Then, the attacker adds an extra fully-connected layer to this GNN so that it output $M\hat{h}_i$ instead of $\hat{h_i}$ (one fully-connected layer suffices since it is a linear transformation). This GNN-with-extra-layer becomes the attacker's GNN $M'$.
+
+In this example, $M'$ outputs $h'_i = M\hat{h}_i \in \mathbb{R}^{d'}$, where $\hat{h}_i$ is an "internal" embedding generated within $M'$ that is never output. This is why our algorithm only uses $h_i$ and $h'_i$, never $\hat{h}_i$. Only our analysis uses the fact that such an $\hat{h}_i$ exists.
+
+We emphasize that this is only one example. The attacker can use any approach to train $M'$. We just assume that the outputs $h'_i$ from $M'$ are linked to the outputs $h_i$ of $M$ via some (unknown) $\phi$ and $\hat{h}_i$.
