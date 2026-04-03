@@ -260,3 +260,16 @@
 |---|---|---|---|---|---|
 | SPADE is better | 4% | 8% | 6% | 7% | 14% |
 | GP-UCB is better | 7% | 13% | 15% | 11% | 26% |
+
+
+
+
+# Final response
+
+## wkp5
+
+Thank you for your suggestion regarding DUD-E and LIT-PCBA. We must note that our goal is to learn from affinity PIC patterns among ligands tested in DMTA cycles. DUD-E measure docking, which is different from affinity. LIT-PCBA provides no PIC data, only two sets of inactive and active ligands for just 15 proteins. Neither of these is appropriate for our task. They are for different problems.
+
+For our problem, we combined (to our knowledge) all available datasets containing PICs, including 1.5M datapoints we collected ourselves. The reviewer suggests this is insufficient, even for comparing between methods, and offers no suggestion on how to fix this. Instead, as we understand it, the suggestion is to work on something else.
+
+We note that there are other areas where publicly available datasets are nowhere comparable to the "real" data/problems in industry. Computational advertising, recommendation systems, behavioral targeting and personalization, and web search and retrieval come to mind. Yet, our approach is what is done there too.
