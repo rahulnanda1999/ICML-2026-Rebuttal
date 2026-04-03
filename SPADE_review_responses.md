@@ -273,3 +273,7 @@ Thank you for your suggestion regarding DUD-E and LIT-PCBA. We must note that ou
 For our problem, we combined (to our knowledge) all available datasets containing PICs, including 1.5M datapoints we collected ourselves. The reviewer suggests this is insufficient, even for comparing between methods, and offers no suggestion on how to fix this. Instead, as we understand it, the suggestion is to work on something else.
 
 We note that there are other areas where publicly available datasets are nowhere comparable to the "real" data/problems in industry. Computational advertising, recommendation systems, behavioral targeting and personalization, and web search and retrieval come to mind. Yet, our approach is what is done there too.
+
+## va8h
+
+We would be grateful for any pointers to methods and benchmarks. We note that our goal is to learn from affinity PIC patterns among ligands tested in DMTA cycles. DUD-E measure docking, which is different from affinity. LIT-PCBA provides no PIC data. We are unaware of any other methods or datasets for this problem, other than the ones we have compared against.
