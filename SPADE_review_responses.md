@@ -268,7 +268,7 @@
 
 ## wkp5
 
-Thank you for your suggestion regarding DUD-E and LIT-PCBA. We must note that our goal is to learn from affinity PIC patterns among ligands tested in DMTA cycles. DUD-E measure docking, which is different from affinity. LIT-PCBA provides no PIC data, only two sets of inactive and active ligands for just 15 proteins. Neither of these is appropriate for our task. They are for different problems.
+Thank you for your suggestion regarding DUD-E and LIT-PCBA. We must note that our goal is to learn from affinity PIC patterns among ligands tested in DMTA cycles. DUD-E measure docking, which is different from affinity. LIT-PCBA provides no PIC data, only two sets of inactive and active ligands for 15 proteins. If there is PIC data available, we would be very grateful if the reviewer could direct us to that data. But, as we see it, neither DUD-E/DUD-Z not LIT-PCBA is appropriate for our task. They are for different problems.
 
 For our problem, we combined (to our knowledge) all available datasets containing PICs, including 1.5M datapoints we collected ourselves. The reviewer suggests this is insufficient, even for comparing between methods, and offers no suggestion on how to fix this. Instead, as we understand it, the suggestion is to work on something else.
 
