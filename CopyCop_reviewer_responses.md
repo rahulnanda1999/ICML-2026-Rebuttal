@@ -238,7 +238,8 @@ We make two observations.
 |Coco (random) | 0.04 | 0.06  | 0.48 | 0.14 | 0.14 |
 |Coco (stationary) | 0.02 | 0.05 | 0.07 | 0.05 | 0.09 |
 
-* For very large graphs, we **do not need to optimize over the entire $X$**. Since the goal is to get a stationary point for the embedding of one node, we can optimize over the features of that node and the k-nearest-neighbor nodes in its neighborhood. This would give enough flexibility to find a good stationary point, and the complexity would depend on $k$, not the number of nodes.
+* For very large graphs, we **do not need to optimize over the entire $X$**. Since the goal is to get a stationary point for the embedding of one node, we can optimize over the features of that node and the k-nearest-neighbor nodes in its neighborhood. This would give enough flexibility to find a good stationary point, and the complexity would depend on $k$, not the number of nodes. We will mention this in the paper.
+* The size of the dataset and other characteristics are in Table 4 in the Appendix.
 
 ## b7h2
 
