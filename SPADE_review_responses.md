@@ -277,3 +277,9 @@ We note that there are other areas where publicly available datasets are nowhere
 ## va8h
 
 We would be grateful for any pointers to methods and benchmarks. We note that our goal is to learn from affinity PIC patterns among ligands tested in DMTA cycles. DUD-E measure docking, which is different from affinity. LIT-PCBA provides no PIC data. We are unaware of any other methods or datasets for this problem, other than the ones we have compared against.
+
+# AC Comments
+
+We humbly note that Reviewer wkP5 gave us a **Reject** solely because they **dislike our dataset**, in spite of it being the union of all data we can find containing PIC information (over 3.5M samples, with 1.5M new samples added by us). The reviewer favors DUD-E and LIT-PCBA, but these **cannot be used for our problem** because do not contain PIC data.
+
+Reviewer va8h also asks for "comparisons against current methods", but **names no benchmarks/methods** in the review or in the rebuttal response. We compare against the latest methods for our problem (Neurips/24), use the most available data containing PICs, and added new experiments based on deep-learning embeddings in the rebuttal.
