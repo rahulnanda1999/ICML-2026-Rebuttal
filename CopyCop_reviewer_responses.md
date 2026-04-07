@@ -273,3 +273,8 @@ The code is available at [here](https://anonymous.4open.science/r/CopyCop-Graph-
 ### Presentation
 
 Thank you for your detailed suggestions. We will revise the paper accordingly.
+
+
+# AC Comments
+
+We humbly point out that Reviewer b7h2 initially gave us a **Strong Reject** based on a **faulty reading** of Definition 3.2. Nearly all of the points in the review stem from this misunderstanding, which was not shared by the other reviewers. After our detailed responses, Reviewer b7h2 no longer points to any substantive issues, yet has kept the score as Reject. We regard the current review as **deeply unfair**, and worry that it may influence the other reviewers as well.
